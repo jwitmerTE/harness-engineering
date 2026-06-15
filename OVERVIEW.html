@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Harness Engineering — System Overview</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --bg-elev: #11151f;
+    --bg-card: #131825;
+    --border: #232a3b;
+    --border-soft: #1b2130;
+    --text: #e6e9f0;
+    --text-dim: #9aa3b8;
+    --text-faint: #6b7488;
+    --accent: #7c8cff;
+    --accent-2: #a78bfa;
+    --durable: #4ade80;
+    --danger: #fbbf24;
+    --safe: #38bdf8;
+    --route: #f472b6;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(900px 500px at 80% -10%, rgba(124,140,255,0.10), transparent),
+      radial-gradient(700px 400px at 0% 5%, rgba(167,139,250,0.08), transparent);
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+  code, .mono { font-family: var(--mono); }
+
+  /* ---- Hero ---- */
+  header.hero {
+    padding: 80px 0 48px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  h1 .grad {
+    background: linear-gradient(100deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lede {
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 680px;
+  }
+  .mantra {
+    margin-top: 28px;
+    padding: 16px 20px;
+    border-left: 3px solid var(--accent);
+    background: linear-gradient(90deg, rgba(124,140,255,0.07), transparent);
+    border-radius: 0 8px 8px 0;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .mantra b { color: var(--accent-2); font-weight: 600; }
+  .stack {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .actions { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 14px; font-weight: 550;
+    padding: 11px 18px; border-radius: 10px;
+    text-decoration: none; transition: transform .15s, border-color .15s, background .15s;
+  }
+  .btn svg { width: 17px; height: 17px; }
+  .btn-primary { background: linear-gradient(100deg, var(--accent), var(--accent-2)); color: #0b0e14; }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-ghost { background: var(--bg-card); border: 1px solid var(--border); color: var(--text); }
+  .btn-ghost:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  /* ---- Sections ---- */
+  section { padding: 56px 0; border-bottom: 1px solid var(--border-soft); }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 28px; }
+  .sec-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    background: var(--bg-card);
+  }
+  h2 { font-size: 26px; letter-spacing: -0.01em; font-weight: 650; }
+  .sec-sub { color: var(--text-dim); margin-top: 8px; font-size: 15.5px; max-width: 720px; }
+
+  /* ---- Loop diagram ---- */
+  .loop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .loop-step {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 16px 18px;
+    overflow: hidden;
+  }
+  .loop-step::before {
+    content: "";
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--col, var(--accent));
+  }
+  .loop-step .n {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .loop-step .t { font-weight: 600; font-size: 15px; margin: 6px 0 4px; }
+  .loop-step .c { font-family: var(--mono); font-size: 12px; color: var(--accent); margin-bottom: 8px; word-break: break-word;}
+  .loop-step .d { font-size: 13px; color: var(--text-dim); line-height: 1.45; }
+  .loop-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-top: 10px;
+  }
+  .tag-mem { color: var(--accent-2); background: rgba(167,139,250,0.12); }
+  .tag-llm { color: var(--safe); background: rgba(56,189,248,0.12); }
+  .tag-durable { color: var(--durable); background: rgba(74,222,128,0.12); }
+  .tag-gate { color: var(--danger); background: rgba(251,191,36,0.12); }
+  .loopback {
+    margin-top: 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-faint);
+    text-align: center;
+    padding: 10px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+  .loopback b { color: var(--accent); }
+
+  /* ---- Architecture SVG ---- */
+  .arch { margin-top: 8px; }
+  .arch svg { width: 100%; height: auto; display: block; }
+
+  /* ---- Module cards ---- */
+  .layer-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 32px 0 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .layer-label::after { content:""; flex:1; height:1px; background: var(--border-soft); }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: border-color .2s, transform .2s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card .file {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .card h3 { font-size: 17px; font-weight: 620; margin-bottom: 8px; }
+  .card p { font-size: 14px; color: var(--text-dim); line-height: 1.5; }
+  .card .keys { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .key {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 7px;
+  }
+
+  /* ---- Tool tiers ---- */
+  .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 16px; }
+  .tier { border:1px solid var(--border); border-radius: 14px; padding: 20px; background: var(--bg-card); }
+  .tier h4 { font-size: 15px; margin-bottom: 10px; display:flex; align-items:center; gap:8px; }
+  .dot { width:9px; height:9px; border-radius:50%; }
+  .tier ul { list-style: none; }
+  .tier li { font-family: var(--mono); font-size: 13px; padding: 5px 0; color: var(--text-dim); border-bottom: 1px solid var(--border-soft); }
+  .tier li:last-child { border-bottom: none; }
+  .tier .note { font-size: 12.5px; color: var(--text-faint); margin-top: 10px; line-height: 1.45; font-family: var(--sans); }
+
+  /* ---- Deps ---- */
+  .deps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .dep { background: var(--bg-card); border:1px solid var(--border); border-radius:14px; padding: 22px; }
+  .dep h4 { font-size: 16px; margin-bottom: 6px; }
+  .dep .pkg { font-family: var(--mono); font-size:12px; color: var(--accent); margin-bottom: 12px; }
+  .dep p { font-size: 14px; color: var(--text-dim); }
+  .dep .prod { margin-top:12px; font-size:13px; color: var(--text-faint); }
+  .dep .prod b { color: var(--text-dim); }
+
+  /* ---- Table ---- */
+  .tbl-wrap { overflow-x: auto; border:1px solid var(--border); border-radius: 14px; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; }
+  thead th {
+    text-align: left; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-faint); padding: 14px 18px; background: var(--bg-elev); border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 14px 18px; font-size: 14px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(124,140,255,0.04); }
+  td .m { font-family: var(--mono); font-size: 12.5px; color: var(--accent-2); }
+  td.concern { color: var(--text); font-weight: 550; }
+  td.mech { color: var(--text-dim); }
+
+  footer { padding: 48px 0 64px; color: var(--text-faint); font-size: 13.5px; }
+  footer .mono { color: var(--text-dim); }
+
+  @media (max-width: 680px) {
+    .deps { grid-template-columns: 1fr; }
+    header.hero { padding: 56px 0 40px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Harness Engineering · System Overview</div>
+    <h1>A mini agent runtime that makes an<br><span class="grad">LLM loop survive production.</span></h1>
+    <p class="lede">A bare LLM loop fails in predictable ways: a crash loses everything, a tool fires twice, context grows until the model degrades, an approval stalls for days. The <b>harness</b> handles all of it. The domain is ordinary support triage — the runtime is the point.</p>
+    <div class="mantra">Agent systems are workflow systems. <b>The LLM decides the next semantic step. The harness owns execution.</b></div>
+    <div class="actions">
+      <a class="btn btn-primary" href="https://github.com/justuswitmer/harness-engineering" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View the code on GitHub
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/justuswitmer/harness-engineering/blob/main/OVERVIEW.md" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 1.5h5L13 5v9.5H4z" stroke-linejoin="round"/><path d="M9 1.5V5h4M6 8h4M6 11h4" stroke-linecap="round"/></svg>
+        Read OVERVIEW.md
+      </a>
+    </div>
+    <div class="stack">
+      <span class="chip">Node.js + TypeScript</span>
+      <span class="chip">Vercel AI SDK</span>
+      <span class="chip">OpenAI · gpt-5.5</span>
+      <span class="chip">DBOS · durable execution</span>
+      <span class="chip">Drizzle + Postgres</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== The execution loop ===== -->
+<section id="loop">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <div>
+        <h2>The execution loop</h2>
+        <p class="sec-sub">Everything in the codebase contributes to one durable, resumable loop. Each step maps to a module. All non-determinism lives inside durable steps, so the loop body can be replayed deterministically after a crash.</p>
+      </div>
+    </div>
+
+    <div class="loop-grid">
+      <div class="loop-step" style="--col:var(--accent-2)">
+        <div class="n">STEP 1</div>
+        <div class="t">Hydrate context</div>
+        <div class="c">buildContext()</div>
+        <div class="d">Assemble this turn: prompt, pinned task, running summary, recent turns.</div>
+        <span class="loop-tag tag-mem">memory</span>
+      </div>
+      <div class="loop-step" style="--col:var(--safe)">
+        <div class="n">STEP 2</div>
+        <div class="t">Model turn</div>
+        <div class="c">DBOS.runStep(modelTurn)</div>
+        <div class="d">The LLM decides the next step and returns structured tool calls.</div>
+        <span class="loop-tag tag-llm">llm · durable</span>
+      </div>
+      <div class="loop-step" style="--col:var(--route)">
+        <div class="n">STEP 3</div>
+        <div class="t">Route or gate</div>
+        <div class="c">handoff / NEEDS_APPROVAL</div>
+        <div class="d">Swap the active agent, or suspend until a human approves.</div>
+        <span class="loop-tag tag-gate">routing · approval</span>
+      </div>
+      <div class="loop-step" style="--col:var(--durable)">
+        <div class="n">STEP 4</div>
+        <div class="t">Execute step</div>
+        <div class="c">DBOS.runStep(toolStep)</div>
+        <div class="d">Side effect runs exactly once and is checkpointed to Postgres.</div>
+        <span class="loop-tag tag-durable">tool · durable</span>
+      </div>
+    </div>
+    <div class="loopback">↺ &nbsp; loop <b>while (step &lt; MAX_STEPS)</b> &nbsp;·&nbsp; on crash, <b>DBOS.launch()</b> resumes each in-flight workflow from its last completed step</div>
+  </div>
+</section>
+
+<!-- ===== Architecture ===== -->
+<section id="arch">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <div>
+        <h2>How the pieces connect</h2>
+        <p class="sec-sub">The harness and the inspector never share business logic. They share one thing: a typed event stream. Every action becomes an <code>AgentEvent</code>, persisted before it is broadcast.</p>
+      </div>
+    </div>
+
+    <div class="arch">
+      <svg viewBox="0 0 920 430" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, monospace">
+        <defs>
+          <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="#7c8cff" />
+          </marker>
+          <marker id="arrg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="#4ade80" />
+          </marker>
+        </defs>
+
+        <!-- Runtime cluster -->
+        <rect x="20" y="40" width="300" height="350" rx="14" fill="#11151f" stroke="#232a3b"/>
+        <text x="40" y="68" fill="#6b7488" font-size="12" letter-spacing="2">THE HARNESS · RUNTIME</text>
+
+        <rect x="40" y="84" width="120" height="50" rx="9" fill="#131825" stroke="#2d3650"/>
+        <text x="100" y="108" fill="#e6e9f0" font-size="12" text-anchor="middle">runtime.ts</text>
+        <text x="100" y="123" fill="#6b7488" font-size="10" text-anchor="middle">the spine</text>
+
+        <rect x="180" y="84" width="120" height="50" rx="9" fill="#131825" stroke="#2d3650"/>
+        <text x="240" y="108" fill="#e6e9f0" font-size="12" text-anchor="middle">supervisor.ts</text>
+        <text x="240" y="123" fill="#6b7488" font-size="10" text-anchor="middle">fan-out / fan-in</text>
+
+        <rect x="40" y="148" width="120" height="46" rx="9" fill="#131825" stroke="#232a3b"/>
+        <text x="100" y="170" fill="#cdd3e3" font-size="11.5" text-anchor="middle">agents.ts</text>
+        <text x="100" y="184" fill="#6b7488" font-size="9.5" text-anchor="middle">triage · billing</text>
+
+        <rect x="180" y="148" width="120" height="46" rx="9" fill="#131825" stroke="#232a3b"/>
+        <text x="240" y="170" fill="#cdd3e3" font-size="11.5" text-anchor="middle">memory.ts</text>
+        <text x="240" y="184" fill="#6b7488" font-size="9.5" text-anchor="middle">context hydration</text>
+
+        <rect x="40" y="208" width="120" height="46" rx="9" fill="#131825" stroke="#232a3b"/>
+        <text x="100" y="230" fill="#cdd3e3" font-size="11.5" text-anchor="middle">tools.ts</text>
+        <text x="100" y="244" fill="#6b7488" font-size="9.5" text-anchor="middle">safe · dangerous</text>
+
+        <rect x="180" y="208" width="120" height="46" rx="9" fill="#131825" stroke="#232a3b"/>
+        <text x="240" y="230" fill="#cdd3e3" font-size="11.5" text-anchor="middle">sandbox.ts</text>
+        <text x="240" y="244" fill="#6b7488" font-size="9.5" text-anchor="middle">node:vm</text>
+
+        <rect x="40" y="268" width="120" height="46" rx="9" fill="#131825" stroke="#232a3b"/>
+        <text x="100" y="290" fill="#cdd3e3" font-size="11.5" text-anchor="middle">investigators.ts</text>
+        <text x="100" y="304" fill="#6b7488" font-size="9.5" text-anchor="middle">read-only subs</text>
+
+        <!-- DBOS / Postgres -->
+        <rect x="40" y="330" width="260" height="44" rx="9" fill="#0f1a12" stroke="#2c5138"/>
+        <text x="170" y="352" fill="#4ade80" font-size="11.5" text-anchor="middle">DBOS · runStep / recv / send</text>
+        <text x="170" y="366" fill="#5b7a63" font-size="9.5" text-anchor="middle">checkpoints + resumes to Postgres</text>
+
+        <!-- Event bus (center spine) -->
+        <rect x="370" y="150" width="160" height="130" rx="14" fill="#15131f" stroke="#3a3060"/>
+        <text x="450" y="186" fill="#a78bfa" font-size="13" text-anchor="middle" font-weight="bold">event bus</text>
+        <text x="450" y="206" fill="#8a7fb0" font-size="10" text-anchor="middle">bus.ts · db.ts</text>
+        <text x="450" y="230" fill="#6b7488" font-size="9.5" text-anchor="middle">persist FIRST,</text>
+        <text x="450" y="243" fill="#6b7488" font-size="9.5" text-anchor="middle">then broadcast</text>
+        <text x="450" y="263" fill="#5b6480" font-size="9" text-anchor="middle">event_log · seq + jsonb</text>
+
+        <!-- shared contract -->
+        <rect x="370" y="60" width="160" height="60" rx="11" fill="#131825" stroke="#232a3b"/>
+        <text x="450" y="86" fill="#cdd3e3" font-size="11.5" text-anchor="middle">shared/events.ts</text>
+        <text x="450" y="103" fill="#6b7488" font-size="9.5" text-anchor="middle">AgentEvent — the contract</text>
+
+        <!-- server -->
+        <rect x="580" y="150" width="150" height="130" rx="14" fill="#11151f" stroke="#232a3b"/>
+        <text x="655" y="186" fill="#e6e9f0" font-size="12.5" text-anchor="middle">server/index.ts</text>
+        <text x="655" y="205" fill="#6b7488" font-size="10" text-anchor="middle">Express + ws</text>
+        <text x="655" y="226" fill="#6b7488" font-size="9.5" text-anchor="middle">submit_task ↓</text>
+        <text x="655" y="240" fill="#6b7488" font-size="9.5" text-anchor="middle">approve ↑</text>
+        <text x="655" y="261" fill="#5b6480" font-size="9" text-anchor="middle">replays history on connect</text>
+
+        <!-- inspector -->
+        <rect x="780" y="150" width="120" height="130" rx="14" fill="#11151f" stroke="#232a3b"/>
+        <text x="840" y="190" fill="#e6e9f0" font-size="12.5" text-anchor="middle">web/</text>
+        <text x="840" y="208" fill="#6b7488" font-size="10" text-anchor="middle">inspector</text>
+        <text x="840" y="232" fill="#5b6480" font-size="9.5" text-anchor="middle">pure projection</text>
+        <text x="840" y="246" fill="#5b6480" font-size="9.5" text-anchor="middle">of the stream</text>
+
+        <!-- connectors -->
+        <line x1="320" y1="215" x2="368" y2="215" stroke="#7c8cff" stroke-width="1.6" marker-end="url(#arr)"/>
+        <line x1="450" y1="120" x2="450" y2="148" stroke="#7c8cff" stroke-width="1.6" marker-end="url(#arr)"/>
+        <line x1="530" y1="215" x2="578" y2="215" stroke="#7c8cff" stroke-width="1.6" marker-end="url(#arr)"/>
+        <line x1="730" y1="215" x2="778" y2="215" stroke="#7c8cff" stroke-width="1.6" marker-end="url(#arr)"/>
+        <!-- server back to runtime (submit_task) -->
+        <path d="M600,150 C560,60 360,60 320,108" fill="none" stroke="#4ade80" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arrg)"/>
+        <text x="455" y="48" fill="#5b7a63" font-size="9.5" text-anchor="middle">submit_task / approve → start &amp; resume workflows</text>
+
+        <text x="345" y="300" fill="#5b6480" font-size="9.5" text-anchor="middle" transform="rotate(-90 345 300)">emit()</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Modules ===== -->
+<section id="modules">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <div>
+        <h2>The modules</h2>
+        <p class="sec-sub">Each module owns exactly one concern and is independently replaceable. Swap DBOS for Temporal and only <code>runtime.ts</code> changes. Swap <code>node:vm</code> for e2b and only <code>sandbox.ts</code> changes.</p>
+      </div>
+    </div>
+
+    <div class="layer-label">Contract &amp; durable log</div>
+    <div class="cards">
+      <div class="card">
+        <div class="file">shared/events.ts</div>
+        <h3>The shared contract</h3>
+        <p>One typed event stream is all the harness and the inspector share. The <code>EventType</code> enum is the complete capability list of the harness — a new feature is a new event type first.</p>
+        <div class="keys"><span class="key">ModelDelta</span><span class="key">ToolRequested</span><span class="key">AgentHandoff</span><span class="key">ApprovalRequested</span></div>
+      </div>
+      <div class="card">
+        <div class="file">harness/bus.ts</div>
+        <h3>The event bus</h3>
+        <p>Publish/subscribe backbone. Persists every event to Postgres <em>before</em> broadcasting, so the inspector never sees an uncommitted event. Replays the full timeline to a freshly connected client.</p>
+        <div class="keys"><span class="key">emit()</span><span class="key">history()</span></div>
+      </div>
+      <div class="card">
+        <div class="file">harness/db.ts</div>
+        <h3>The database layer</h3>
+        <p>One table, two columns: <code>seq</code> for global insert order, <code>data</code> typed as <code>AgentEvent</code>. Events are only ever inserted and read — never updated. Schema is created on boot, no migration step.</p>
+        <div class="keys"><span class="key">event_log</span><span class="key">bigserial seq</span><span class="key">jsonb data</span></div>
+      </div>
+    </div>
+
+    <div class="layer-label">Tools &amp; execution safety</div>
+    <div class="cards">
+      <div class="card">
+        <div class="file">harness/tools.ts</div>
+        <h3>Tools &amp; the executor</h3>
+        <p>Schema (what the model sees) and executor (what the harness runs) are separate concerns. The model never gets raw function access — it returns a structured tool call and <code>runTool</code> mediates.</p>
+        <div class="keys"><span class="key">runTool</span><span class="key">tiered by consequence</span></div>
+      </div>
+      <div class="card">
+        <div class="file">harness/sandbox.ts</div>
+        <h3>The sandbox</h3>
+        <p>Agent-written code runs in a <code>node:vm</code> context with a read-only API — no require, process, fs, or fetch. Errors return structured, so the model can diagnose and rewrite rather than be blocked.</p>
+        <div class="keys"><span class="key">SandboxResult</span><span class="key">read-only API</span></div>
+      </div>
+    </div>
+
+    <div class="layer-label">Memory</div>
+    <div class="cards">
+      <div class="card">
+        <div class="file">harness/memory.ts</div>
+        <h3>Memory &amp; context hydration</h3>
+        <p>Three distinct ideas: <b>history</b> (everything, in Postgres), <b>state</b> (a running prose summary), <b>context</b> (what the model sees this turn). Over a token budget, the oldest turns compact into the summary.</p>
+        <div class="keys"><span class="key">buildContext()</span><span class="key">token-budget compaction</span></div>
+      </div>
+    </div>
+
+    <div class="layer-label">Agents, routing &amp; supervision</div>
+    <div class="cards">
+      <div class="card">
+        <div class="file">harness/agents.ts</div>
+        <h3>Agent definitions</h3>
+        <p>An agent is data, not code: a name, a system prompt, and a strict tool subset. Least privilege is enforced by the subset — triage physically cannot call <code>issueRefund</code> because its schema omits it.</p>
+        <div class="keys"><span class="key">triageAgent</span><span class="key">billingAgent</span></div>
+      </div>
+      <div class="card">
+        <div class="file">harness/runtime.ts</div>
+        <h3>The spine</h3>
+        <p>Ties every module into one durable loop. Three patterns compose: durability (each call a DBOS step), handoff (swap the agent, keep the conversation), and the approval gate (suspend in Postgres, free the process).</p>
+        <div class="keys"><span class="key">DBOS.runStep</span><span class="key">handoff</span><span class="key">DBOS.recv</span></div>
+      </div>
+      <div class="card">
+        <div class="file">harness/supervisor.ts</div>
+        <h3>The supervisor</h3>
+        <p>An alternative runtime for parallel sub-problems. Plans, fans out investigators with <code>Promise.allSettled</code>, then synthesizes. A failed investigator never aborts the run; synthesis acknowledges gaps.</p>
+        <div class="keys"><span class="key">makePlan()</span><span class="key">allSettled</span><span class="key">synthesize()</span></div>
+      </div>
+      <div class="card">
+        <div class="file">harness/investigators.ts</div>
+        <h3>Investigators</h3>
+        <p>Read-only sub-agents, each with an inline-<code>execute</code> tool set so the AI SDK runs its own tool loop. Because they have no side effects, re-running one after a crash is safe — the whole call is one durable step.</p>
+        <div class="keys"><span class="key">runInvestigator</span><span class="key">stepCountIs(5)</span></div>
+      </div>
+    </div>
+
+    <div class="layer-label">Surface</div>
+    <div class="cards">
+      <div class="card">
+        <div class="file">server/index.ts</div>
+        <h3>The server</h3>
+        <p>Express + WebSocket. On boot, <code>ensureSchema()</code> then <code>DBOS.launch()</code> recovers in-flight workflows. One socket per inspector; <code>submit_task</code> routes to the agent or supervisor runtime.</p>
+        <div class="keys"><span class="key">/api/clear</span><span class="key">/api/approve/:id</span></div>
+      </div>
+      <div class="card">
+        <div class="file">web/</div>
+        <h3>The inspector</h3>
+        <p>A prebuilt Vite + React dashboard that renders the event stream and nothing else — step timeline, tool calls, handoff dividers, sub-agent tree, approval card. A pure projection; no hidden infrastructure.</p>
+        <div class="keys"><span class="key">step timeline</span><span class="key">approval card</span></div>
+      </div>
+      <div class="card">
+        <div class="file">scripts/</div>
+        <h3>The scripts</h3>
+        <p><code>inspect-log.ts</code> reads the log straight from Postgres and flags any tool requested twice — a duplicate-side-effect check. <code>test-sandbox.ts</code> drives the sandbox through four cases without the agent.</p>
+        <div class="keys"><span class="key">inspect-log</span><span class="key">test-sandbox</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Tool tiers ===== -->
+<section id="tiers">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <div>
+        <h2>Tools split by consequence</h2>
+        <p class="sec-sub">The tool set is tiered. The tier decides whether a call is safe to re-run after a crash, whether it is a durable step, and whether it needs a human.</p>
+      </div>
+    </div>
+    <div class="tiers">
+      <div class="tier">
+        <h4><span class="dot" style="background:var(--safe)"></span> Read / compute</h4>
+        <ul>
+          <li>runCode</li>
+          <li>classifyItem</li>
+          <li>draftReply</li>
+        </ul>
+        <p class="note">Safe to re-run after a crash. No side effects to duplicate.</p>
+      </div>
+      <div class="tier">
+        <h4><span class="dot" style="background:var(--durable)"></span> Side-effecting</h4>
+        <ul>
+          <li>sendReply</li>
+          <li>issueRefund <span style="color:var(--danger)">· needs approval</span></li>
+        </ul>
+        <p class="note">Each call is a durable step. <code>issueRefund</code> moves money — it also suspends for human approval.</p>
+      </div>
+      <div class="tier">
+        <h4><span class="dot" style="background:var(--route)"></span> Routing</h4>
+        <ul>
+          <li>handoff</li>
+        </ul>
+        <p class="note">Intercepted by the runtime — never reaches <code>runTool</code>. It swaps the active agent and continues the conversation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Key dependencies ===== -->
+<section id="deps">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <div>
+        <h2>Key dependencies</h2>
+        <p class="sec-sub">Two libraries earn their place. Everything else is built from scratch and the production tools are named, not depended on.</p>
+      </div>
+    </div>
+    <div class="deps">
+      <div class="dep">
+        <h4>Durable execution</h4>
+        <div class="pkg">@dbos-inc/dbos-sdk</div>
+        <p>Wrapping a function in <code>DBOS.runStep()</code> checkpoints its result to Postgres before the workflow continues. On crash, <code>DBOS.launch()</code> resumes every in-flight workflow from its last completed step — no repeated LLM calls, no duplicate side effects. <code>recv</code>/<code>send</code> extend the guarantee to human-approval suspend/resume.</p>
+        <p class="prod"><b>In production:</b> Temporal, Inngest.</p>
+      </div>
+      <div class="dep">
+        <h4>Typed SQL</h4>
+        <div class="pkg">drizzle-orm</div>
+        <p>A type-safe query builder, used for the one <code>event_log</code> table whose <code>data</code> column is typed as <code>AgentEvent</code>. Every row read back is already the right shape — no runtime casting. Raw SQL would work; Drizzle earns its place through that single typed column.</p>
+        <p class="prod"><b>Boundary:</b> <code>node:vm</code> is not a true security boundary → e2b, Firecracker, Cloudflare Sandbox.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Concern table ===== -->
+<section id="map">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <div>
+        <h2>How the pieces complete the whole</h2>
+        <p class="sec-sub">Each row is one production failure mode and the module that answers it.</p>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Concern</th><th>Module</th><th>Mechanism</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="concern">Persistent event log</td><td><span class="m">bus.ts · db.ts</span></td><td class="mech">Every <code>emit()</code> writes to Postgres before broadcasting</td></tr>
+          <tr><td class="concern">Crash recovery</td><td><span class="m">runtime.ts · DBOS</span></td><td class="mech"><code>DBOS.runStep</code> checkpoints every LLM and tool call</td></tr>
+          <tr><td class="concern">Exactly-once side effects</td><td><span class="m">runtime.ts · DBOS</span></td><td class="mech">Idempotent steps + durable replay from last checkpoint</td></tr>
+          <tr><td class="concern">Safe code execution</td><td><span class="m">sandbox.ts · tools.ts</span></td><td class="mech"><code>node:vm</code> context with an explicit, read-only API surface</td></tr>
+          <tr><td class="concern">Bounded context</td><td><span class="m">memory.ts</span></td><td class="mech">Token-budget compaction into a running summary</td></tr>
+          <tr><td class="concern">Least-privilege routing</td><td><span class="m">agents.ts · runtime.ts</span></td><td class="mech">Tool subset per agent; <code>handoff</code> swaps the active agent</td></tr>
+          <tr><td class="concern">Parallel sub-tasks</td><td><span class="m">supervisor.ts · investigators.ts</span></td><td class="mech"><code>Promise.allSettled</code> over durable steps; fan-in keeps successes</td></tr>
+          <tr><td class="concern">Durable human approval</td><td><span class="m">runtime.ts · server · DBOS</span></td><td class="mech"><code>recv</code>/<code>send</code> suspends and resumes across crashes</td></tr>
+          <tr><td class="concern">Observable runtime</td><td><span class="m">events.ts · bus.ts · web/</span></td><td class="mech">Typed event stream; inspector is a pure projection</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Harness Engineering — system overview · a visual rendering of <span class="mono">OVERVIEW.md</span>.<br>
+    Each module is a single, replaceable concern. The rest composes unchanged.
+  </div>
+</footer>
+
+</body>
+</html>
